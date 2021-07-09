@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreSpotlight
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -17,8 +18,30 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let _ = (scene as? UIWindowScene) else { return }
+        
+        guard let userActivity = connectionOptions.userActivities.first else { return }
+        self.scene(scene, continue: userActivity)
     }
+    
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        
+        if userActivity.activityType == CSSearchableItemActionType {
+            
+            if let uniqueIdentifier = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String {
+                
+                if let navigationController = UIApplication.shared.windows.first?.rootViewController as? UINavigationController,
+                   let rootViewController = navigationController.viewControllers.first as? ViewController {
 
+                    navigationController.popToRootViewController(animated: false)
+                    
+                    if let index = Int(uniqueIdentifier) {
+                        rootViewController.pushDetail(index)
+                    }
+                }
+            }
+        }
+    }
+    
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
         // This occurs shortly after the scene enters the background, or when its session is discarded.
